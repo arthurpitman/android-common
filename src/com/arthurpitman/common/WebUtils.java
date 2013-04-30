@@ -62,7 +62,19 @@ public class WebUtils {
 	 * @throws IOException
 	 * @throws JSONException
 	 */
-	public static JSONObject callJsonWebService(final String url, final String formData) throws IOException, JSONException{
+	public static JSONObject callJsonWebService(final String url, final String formData) throws IOException, JSONException {
+		return (JSONObject) new JSONTokener(retrieveUrlAsString(url, formData)).nextValue();
+	}
+
+
+	/**
+	 * Retrieves a URL as a string.
+	 * @param url
+	 * @param formData optional form data, <code>null</code> if not required.
+	 * @return a {@link String} representing the response.
+	 * @throws IOException
+	 */
+	public static String retrieveUrlAsString(final String url, final String formData) throws IOException {
 		for (int i = 0;; i++) {
 			HttpURLConnection connection = null;
 			try {
@@ -71,9 +83,7 @@ public class WebUtils {
 				} else {
 					connection = connectGet(url);
 				}
-
-				String jsonString = readStreamIntoString(connection.getInputStream(), UTF8_CHARACTER_SET,  BUFFER_SIZE);
-				return (JSONObject) new JSONTokener(jsonString).nextValue();
+				return readStreamIntoString(connection.getInputStream(), UTF8_CHARACTER_SET,  BUFFER_SIZE);
 			}  catch (IOException e) {
 				if (i == CONNECTION_RETRIES) {
 					throw e;
