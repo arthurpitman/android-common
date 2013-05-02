@@ -44,8 +44,6 @@ public class WebUtils {
 
 	private static final String GET_METHOD = "GET";
 	private static final String POST_METHOD = "POST";
-	private static final String CONTENT_TYPE_FIELD = "Content-Type";
-	private static final String FORM_MIME_TYPE = "application/x-www-form-urlencoded";
 	private static final int BUFFER_SIZE = 4096;
 
 	// implement retries to try and prevent HttpURLConnections failing for silly reasons
@@ -56,32 +54,34 @@ public class WebUtils {
 
 	/**
 	 * Calls a JSON web service.
-	 * @param url the url of the call.
-	 * @param formData optional form data, <code>null</code> if not required.
+	 * @param url the URL of the call.
+	 * @param requestProperties optional request properties, <code>null</code> if not required.
+	 * @param post optional post data, <code>null</code> if not required.
 	 * @return a {@link JSONObject} representing the response.
 	 * @throws IOException
 	 * @throws JSONException
 	 */
-	public static JSONObject callJsonWebService(final String url, final String formData) throws IOException, JSONException {
-		return (JSONObject) new JSONTokener(retrieveUrlAsString(url, formData)).nextValue();
+	public static JSONObject callJsonWebService(final String url, final RequestProperty[] requestProperties, final String post) throws IOException, JSONException {
+		return (JSONObject) new JSONTokener(retrieveUrlAsString(url, requestProperties, post.getBytes())).nextValue();
 	}
 
 
 	/**
 	 * Retrieves a URL as a string.
 	 * @param url
-	 * @param formData optional form data, <code>null</code> if not required.
+	 * @param requestProperties optional request properties, <code>null</code> if not required.
+	 * @param postData optional post data, <code>null</code> if not required.
 	 * @return a {@link String} representing the response.
 	 * @throws IOException
 	 */
-	public static String retrieveUrlAsString(final String url, final String formData) throws IOException {
+	public static String retrieveUrlAsString(final String url, final RequestProperty[] requestProperties, final byte[] postData) throws IOException {
 		for (int i = 0;; i++) {
 			HttpURLConnection connection = null;
 			try {
-				if (formData != null) {
-					connection = connectPost(url, formData);
+				if (postData != null) {
+					connection = connectPost(url, requestProperties, postData);
 				} else {
-					connection = connectGet(url);
+					connection = connectGet(url, requestProperties);
 				}
 				return readStreamIntoString(connection.getInputStream(), UTF8_CHARACTER_SET,  BUFFER_SIZE);
 			}  catch (IOException e) {
@@ -106,15 +106,16 @@ public class WebUtils {
 
 	/**
 	 * Downloads a file from a URL and saves it to the local file system.
-	 * @param url the url to connect to.
+	 * @param url the URL to connect to.
+	 * @param requestProperties optional request properties, <code>null</code> if not required.
 	 * @param outputFile local file to write to.
 	 * @throws IOException
 	 */
-	public static void downloadFile(final String url, final File outputFile) throws IOException {
+	public static void downloadFile(final String url, final RequestProperty[] requestProperties, final File outputFile) throws IOException {
 		for (int i = 0;; i++) {
 			HttpURLConnection connection = null;
 			try {
-				connection = connectGet(url);
+				connection = connectGet(url, requestProperties);
 				readStreamIntoFile(connection.getInputStream(),outputFile, BUFFER_SIZE );
 				return;
 			} catch (IOException e) {
@@ -139,12 +140,13 @@ public class WebUtils {
 
 	/**
 	 * Connects to an HTTP resource using the post method.
-	 * @param url the url to connect to.
-	 * @param formData the form data to post.
-	 * @returnthe resulting {@link HttpURLConnection}.
+	 * @param url the URL to connect to.
+	 * @param requestProperties optional request properties, <code>null</code> if not required.
+	 * @param postData the data to post.
+	 * @return the resulting {@link HttpURLConnection}.
 	 * @throws IOException
 	 */
-	public static HttpURLConnection connectPost(final String url, final String formData) throws IOException {
+	public static HttpURLConnection connectPost(final String url, final RequestProperty[] requestProperties, final byte[] postData) throws IOException {
 		// setup connection
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setDoOutput(true);
@@ -152,11 +154,10 @@ public class WebUtils {
 		connection.setRequestMethod(POST_METHOD);
 
 		// send the post form
-		byte[] formDataBytes = formData.getBytes();
-		connection.setFixedLengthStreamingMode(formDataBytes.length);
-		connection.setRequestProperty(CONTENT_TYPE_FIELD, FORM_MIME_TYPE);
+		connection.setFixedLengthStreamingMode(postData.length);
+		addRequestProperties(connection, requestProperties);
 		OutputStream outStream = connection.getOutputStream();
-		outStream.write(formDataBytes);
+		outStream.write(postData);
 		outStream.close();
 
 		return connection;
@@ -165,17 +166,32 @@ public class WebUtils {
 
 	/**
 	 * Connects to an HTTP resource using the get method.
-	 * @param url the url to connect to.
+	 * @param url the URL to connect to.
+	 * @param requestProperties optional request properties, <code>null</code> if not required.
 	 * @return the resulting {@link HttpURLConnection}.
 	 * @throws IOException
 	 */
-	public static HttpURLConnection connectGet(final String url) throws IOException {
+	public static HttpURLConnection connectGet(final String url, final RequestProperty[] requestProperties) throws IOException {
 		// setup connection
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setUseCaches(false);
 		connection.setRequestMethod(GET_METHOD);
-
+		addRequestProperties(connection, requestProperties);
 		return connection;
+	}
+
+
+	/**
+	 * Adds request properties to an HttpURLConnection.
+	 * @param connection
+	 * @param requestProperties
+	 */
+	private static void addRequestProperties(final HttpURLConnection connection, final RequestProperty[] requestProperties) {
+		if (requestProperties != null) {
+			for(RequestProperty requestProperty : requestProperties) {
+				connection.addRequestProperty(requestProperty.getKey(), requestProperty.getValue());
+			}
+		}
 	}
 
 
