@@ -116,7 +116,7 @@ public class WebUtils {
 			HttpURLConnection connection = null;
 			try {
 				connection = connectGet(url, requestProperties);
-				readStreamIntoFile(connection.getInputStream(),outputFile, BUFFER_SIZE );
+				readStreamIntoFile(connection.getInputStream(), outputFile, BUFFER_SIZE, true);
 				return;
 			} catch (IOException e) {
 				if (i == CONNECTION_RETRIES) {
@@ -224,12 +224,14 @@ public class WebUtils {
 
 	/**
 	 * Reads an {@link InputStream} into a {@link File}, useful for saving files from the web.
+	 * <p>
 	 * @param inputStream the InputStream to read.
 	 * @param outputFile the File in which to save the contents of the stream.
 	 * @param bufferSize the size of the buffer in bytes.
+	 * @param closeInputStream true if the input stream should be closed after reading.
 	 * @throws IOException
 	 */
-	public static void readStreamIntoFile(final InputStream inputStream, final File outputFile, final int bufferSize) throws IOException {
+	public static void readStreamIntoFile(final InputStream inputStream, final File outputFile, final int bufferSize, final boolean closeInputStream) throws IOException {
 		FileOutputStream outputStream = null;
 		try {
 			outputStream = new FileOutputStream(outputFile);
@@ -244,7 +246,9 @@ public class WebUtils {
 			if (outputStream != null) {
 				outputStream.close();
 			}
-			inputStream.close();
+			if (closeInputStream) {
+				inputStream.close();
+			}
 		}
 	}
 
