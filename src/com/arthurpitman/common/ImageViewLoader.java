@@ -118,7 +118,7 @@ public class ImageViewLoader {
 				// synchronously download the file if it does not already exist
 				File imageFile = new File(cacheFolder, Integer.toString(targetImageId));
 				if (!imageFile.exists()) {
-					WebUtils.downloadFile(url, null, imageFile);
+					HttpUtils.downloadFile(url, null, imageFile);
 				}
 
 				// load an resize the image
