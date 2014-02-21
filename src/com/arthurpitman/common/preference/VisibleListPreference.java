@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012, 2013 Arthur Pitman
+ * Copyright (C) 2012 - 2014 Arthur Pitman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.arthurpitman.common.preference;
 
 import android.content.Context;
 import android.preference.ListPreference;
-import android.preference.Preference;
 import android.util.AttributeSet;
+import android.util.Log;
 
 /**
  * A {@link ListPreference} that displays the current selection in its summary.
@@ -32,7 +32,6 @@ public class VisibleListPreference extends ListPreference {
 	 */
 	public VisibleListPreference(Context context) {
 		super(context);
-		initializePreference();
 	}
 
 
@@ -43,25 +42,17 @@ public class VisibleListPreference extends ListPreference {
 	 */
 	public VisibleListPreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		initializePreference();
 	}
-
-
-	/**
-	 * Performs shared initialization.
-	 */
-	private void initializePreference() {
-		setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				preference.setSummary(getEntry());
-				return true;
-			}
-		});
+	
+	
+	@Override
+	protected void onDialogClosed(boolean positiveResult) {
+		// TODO Auto-generated method stub
+		super.onDialogClosed(positiveResult);
+		setSummary(getEntry());		
 	}
-
-
+	
+	
 	@Override
 	public CharSequence getSummary() {
 		return super.getEntry();
