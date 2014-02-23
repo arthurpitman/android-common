@@ -16,7 +16,10 @@
 
 package com.arthurpitman.common.preference;
 
+import com.arthurpitman.common.R;
+
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.preference.ListPreference;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -26,6 +29,8 @@ import android.util.Log;
  */
 public class VisibleListPreference extends ListPreference {
 
+	private boolean autoActivate;
+	
 	/**
 	 * Creates a new {@code VisibleListPreference}.
 	 * @param context
@@ -42,12 +47,37 @@ public class VisibleListPreference extends ListPreference {
 	 */
 	public VisibleListPreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		
+		TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.VisibleListPreference);
+		autoActivate = array.getBoolean(R.styleable.VisibleListPreference_autoActivate, true);
+	}
+	
+	
+	public boolean getAutoActivate() {
+		return autoActivate;
+	}
+
+
+	public void setAutoActivate(boolean autoActivate) {
+		this.autoActivate = autoActivate;
+	}
+
+
+	public void activate() {
+		super.onClick();
 	}
 	
 	
 	@Override
+	protected void onClick() {
+		if (autoActivate) {
+			activate();
+		}
+	}
+
+	
+	@Override
 	protected void onDialogClosed(boolean positiveResult) {
-		// TODO Auto-generated method stub
 		super.onDialogClosed(positiveResult);
 		setSummary(getEntry());		
 	}
