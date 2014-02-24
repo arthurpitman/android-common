@@ -30,7 +30,7 @@ import android.util.Log;
 public class VisibleListPreference extends ListPreference {
 
 	private boolean autoActivate;
-	
+
 	/**
 	 * Creates a new {@code VisibleListPreference}.
 	 * @param context
@@ -47,12 +47,13 @@ public class VisibleListPreference extends ListPreference {
 	 */
 	public VisibleListPreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		
+
 		TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.VisibleListPreference);
 		autoActivate = array.getBoolean(R.styleable.VisibleListPreference_autoActivate, true);
+		array.recycle();
 	}
-	
-	
+
+
 	public boolean getAutoActivate() {
 		return autoActivate;
 	}
@@ -66,8 +67,8 @@ public class VisibleListPreference extends ListPreference {
 	public void activate() {
 		super.onClick();
 	}
-	
-	
+
+
 	@Override
 	protected void onClick() {
 		if (autoActivate) {
@@ -75,14 +76,14 @@ public class VisibleListPreference extends ListPreference {
 		}
 	}
 
-	
+
 	@Override
 	protected void onDialogClosed(boolean positiveResult) {
 		super.onDialogClosed(positiveResult);
-		setSummary(getEntry());		
+		setSummary(getEntry());
 	}
-	
-	
+
+
 	@Override
 	public CharSequence getSummary() {
 		return super.getEntry();
