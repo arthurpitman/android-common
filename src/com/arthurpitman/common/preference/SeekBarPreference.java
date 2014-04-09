@@ -29,7 +29,7 @@ import com.arthurpitman.common.R;
 
 /**
  * A preference that displays a seek bar in a dialog.
- * <p>
+ * <p/>
  * The seek bar itself supports a value between 0 and 100.
  * However this be mapped to any double and / or displayed as a String
  * via the {@link Mapper}.

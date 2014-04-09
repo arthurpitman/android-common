@@ -16,13 +16,13 @@
 
 package com.arthurpitman.common.preference;
 
-import com.arthurpitman.common.R;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.preference.ListPreference;
 import android.util.AttributeSet;
-import android.util.Log;
+
+import com.arthurpitman.common.R;
+
 
 /**
  * A {@link ListPreference} that displays the current selection in its summary.
@@ -30,6 +30,7 @@ import android.util.Log;
 public class VisibleListPreference extends ListPreference {
 
 	private boolean autoActivate;
+
 
 	/**
 	 * Creates a new {@code VisibleListPreference}.
@@ -54,16 +55,27 @@ public class VisibleListPreference extends ListPreference {
 	}
 
 
+	/**
+	 * Gets the auto activate flag.
+	 * @return
+	 */
 	public boolean getAutoActivate() {
 		return autoActivate;
 	}
 
 
+	/**
+	 * Sets the auto activate flag.
+	 * @param autoActivate
+	 */
 	public void setAutoActivate(boolean autoActivate) {
 		this.autoActivate = autoActivate;
 	}
 
 
+	/**
+	 * Manually activates the preference.
+	 */
 	public void activate() {
 		super.onClick();
 	}

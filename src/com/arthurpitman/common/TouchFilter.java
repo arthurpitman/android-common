@@ -50,13 +50,12 @@ public class TouchFilter {
 	 * @return <code>true</code> if the event was handled, otherwise <code>false</code>.
 	 */
 	public boolean onTouchEvent(final MotionEvent ev) {
-		final int actionRaw = ev.getAction();
-		final int action = actionRaw & MotionEvent.ACTION_MASK;
-		switch (action) {
+		switch (ev.getActionMasked()) {
 			case MotionEvent.ACTION_POINTER_DOWN:
 			case MotionEvent.ACTION_DOWN:
 				if (pointerCount < 2) {
-					final int pointerIndex = (actionRaw & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+					final int pointerIndex = ev.getActionIndex();
+					Log.d("", "pointerIndex=" + pointerIndex + ", count=" + ev.getPointerCount());
 					final int pointerId = ev.getPointerId(pointerIndex);
 					if (pointerCount == 0) {
 						pointerId1 = pointerId;
@@ -85,7 +84,7 @@ public class TouchFilter {
 			case MotionEvent.ACTION_CANCEL:
 			case MotionEvent.ACTION_POINTER_UP:
 			case MotionEvent.ACTION_UP:
-				int pointerIndex = (actionRaw & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+				int pointerIndex = ev.getActionIndex();
 				final int pointerId = ev.getPointerId(pointerIndex);
 				if (pointerId == pointerId1) {
 					if (pointerCount == 1) {
