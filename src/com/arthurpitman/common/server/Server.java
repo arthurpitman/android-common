@@ -53,11 +53,17 @@ public class Server {
 			Server server = outer.get();
 			Task task  = (Task) message.obj;
 			try {
-				task.setSuccess(task.run(server.getContext()));
+				if (task.getStatus() != Task.STATUS_NONE) {
+					task.setStatus(Task.STATUS_ERROR);
+				} else {
+					task.setStatus(Task.STATUS_READY);
+					task.setStatus(task.run(server.getContext()));
+				}
+				task.setStatus(task.run(server.getContext()));
 			} catch (Exception e) {
 				Log.d(TAG, "exception while executing task: " + e.toString());
 				e.printStackTrace();
-				task.setSuccess(false);
+				task.setStatus(Task.STATUS_ERROR);
 			}
 
 			if (task.getCallback() != null) {
@@ -79,7 +85,7 @@ public class Server {
 			Task task  = (Task) message.obj;
 			try {
 				// force memory synchronization by reading success flag
-				task.getCallback().run(task, task.isSuccess());
+				task.getCallback().run(task, task.getStatus() == Task.STATUS_SUCCESS);
 			} catch (Exception e) {
 				Log.d(TAG, "exception while executing task callback: " + e.toString());
 				e.printStackTrace();

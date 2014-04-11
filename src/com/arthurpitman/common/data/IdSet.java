@@ -38,13 +38,23 @@ public class IdSet {
 		this(DEFAULT_CAPACITY);
 	}
 
+	
+	/**
+	 * Creates a new IdSet based on an array of longs.
+	 * @param array
+	 */
+	public IdSet(long[] array) {
+		this(array.length);
+		System.arraycopy(array, 0, ids, 0, array.length);
+	}
+	
 
 	/**
 	 * Creates a new IdSet.
 	 * @param capacity initial capacity.
 	 */
 	public IdSet(int capacity) {
-		capacity = getIdealSize(capacity * 8) / 8;
+		capacity = getIdealSize(capacity);
 		ids = new long[capacity];
 		size = 0;
 	}
@@ -115,5 +125,16 @@ public class IdSet {
 			}
 		}
 		return size / 8;
+	}
+	
+	
+	/**
+	 * Converts this {@code IdSet} to a array of longs.
+	 * @return
+	 */
+	public long[] toArray() {
+		long[] array = new long[size];
+		System.arraycopy(ids, 0, array, 0, size);
+		return array;
 	}
 }

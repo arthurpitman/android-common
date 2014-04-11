@@ -24,6 +24,12 @@ import com.arthurpitman.common.CoreException;
  */
 public abstract class Task {
 
+	public static final int STATUS_NONE = 0;
+	public static final int STATUS_READY = 1;
+	public static final int STATUS_SUCCESS = 2;
+	public static final int STATUS_ERROR = 3;
+	public static final int STATUS_CANCELED = 4;
+	
 	/**
 	 * Callback interface for {@code Tasks}.
 	 */
@@ -32,9 +38,8 @@ public abstract class Task {
 	}
 
 	private Callback callback;
-	private volatile boolean success = false;
-	private volatile boolean canceled = false;
-
+	private volatile int status = STATUS_NONE;
+	
 
 	/**
 	 * Creates a new Task with the specified callback.
@@ -49,10 +54,10 @@ public abstract class Task {
 	 * Performs the actual work of the Task. <p/>
 	 * Override this in derived classes.
 	 * @param sharedContext
-	 * @return
+	 * @return new {@code Task} status.
 	 * @throws CoreException
 	 */
-	public abstract boolean run(SharedContext sharedContext) throws CoreException;
+	public abstract int run(SharedContext sharedContext) throws CoreException;
 
 
 	/**
@@ -63,38 +68,21 @@ public abstract class Task {
 		return callback;
 	}
 
-
+	
 	/**
-	 * Sets the state of the success flag.
-	 * @param success
-	 */
-	public void setSuccess(boolean success) {
-		this.success = success;
-	}
-
-
-	/**
-	 * Gets the success flag.
+	 * Gets the {@code Task} status.
 	 * @return
 	 */
-	public boolean isSuccess() {
-		return success;
+	public int getStatus() {
+		return status;
 	}
 
 
 	/**
-	 * Sets the canceled flag.
+	 * Sets the {@code Task} status.
+	 * @param status
 	 */
-	public void cancel() {
-		canceled = true;
-	}
-
-
-	/**
-	 * Gets the canceled flag.
-	 * @return
-	 */
-	public boolean isCanceled() {
-		return canceled;
+	public void setStatus(int status) {
+		this.status = status;
 	}
 }
