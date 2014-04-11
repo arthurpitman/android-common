@@ -31,7 +31,7 @@ import android.util.Log;
 public class Server {
 
 	/**
-	 * Internal Handler for executing Commands on a worker thread.
+	 * Internal Handler for executing Tasks on a worker thread.
 	 */
 	private static class ServerHandler extends Handler {
 		private static final String TAG = "ServerHandler";
@@ -51,18 +51,18 @@ public class Server {
 		@Override
 		public void handleMessage(Message message) {
 			Server server = outer.get();
-			Command command  = (Command) message.obj;
+			Task task  = (Task) message.obj;
 			try {
-				command.setSuccess(command.run(server.getContext()));
+				task.setSuccess(task.run(server.getContext()));
 			} catch (Exception e) {
-				Log.d(TAG, "exception while executing command: " + e.toString());
+				Log.d(TAG, "exception while executing task: " + e.toString());
 				e.printStackTrace();
-				command.setSuccess(false);
+				task.setSuccess(false);
 			}
 
-			if (command.getCallback() != null) {
+			if (task.getCallback() != null) {
 				Handler callbackHandler = server.callbackHandler;
-				callbackHandler.sendMessage(Message.obtain(callbackHandler, 0, command));
+				callbackHandler.sendMessage(Message.obtain(callbackHandler, 0, task));
 			}
 		}
 	}
@@ -76,12 +76,12 @@ public class Server {
 
 		@Override
 		public void handleMessage(Message message) {
-			Command command  = (Command) message.obj;
+			Task task  = (Task) message.obj;
 			try {
 				// force memory synchronization by reading success flag
-				command.getCallback().run(command, command.isSuccess());
+				task.getCallback().run(task, task.isSuccess());
 			} catch (Exception e) {
-				Log.d(TAG, "exception while executing command callback: " + e.toString());
+				Log.d(TAG, "exception while executing task callback: " + e.toString());
 				e.printStackTrace();
 			}
 		}
@@ -115,11 +115,11 @@ public class Server {
 
 
 	/**
-	 * Executes the specified command.
-	 * @param command
+	 * Executes the specified task.
+	 * @param task
 	 */
-	public void execute(final Command command) {
-		serverHandler.sendMessage(Message.obtain(serverHandler, 0, command));
+	public void execute(final Task task) {
+		serverHandler.sendMessage(Message.obtain(serverHandler, 0, task));
 	}
 
 

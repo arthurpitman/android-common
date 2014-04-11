@@ -20,15 +20,15 @@ import com.arthurpitman.common.CoreException;
 
 
 /**
- * Base class for commands.
+ * Base class for tasks.
  */
-public abstract class Command {
+public abstract class Task {
 
 	/**
-	 * Callback interface for {@code Commands}.
+	 * Callback interface for {@code Tasks}.
 	 */
 	public interface Callback {
-		void run(Command command, boolean success);
+		void run(Task task, boolean success);
 	}
 
 	private Callback callback;
@@ -37,16 +37,16 @@ public abstract class Command {
 
 
 	/**
-	 * Creates a new Command with the specified callback.
+	 * Creates a new Task with the specified callback.
 	 * @param callback
 	 */
-	public Command(Callback callback) {
+	public Task(Callback callback) {
 		this.callback = callback;
 	}
 
 
 	/**
-	 * Performs the actual work of the Command. <p/>
+	 * Performs the actual work of the Task. <p/>
 	 * Override this in derived classes.
 	 * @param sharedContext
 	 * @return
@@ -56,7 +56,7 @@ public abstract class Command {
 
 
 	/**
-	 * Gets the callback for this {@code Command}.
+	 * Gets the callback for this {@code Task}.
 	 * @return
 	 */
 	public Callback getCallback() {
