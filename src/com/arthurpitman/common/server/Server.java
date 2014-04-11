@@ -59,7 +59,6 @@ public class Server {
 					task.setStatus(Task.STATUS_READY);
 					task.setStatus(task.run(server.getContext()));
 				}
-				task.setStatus(task.run(server.getContext()));
 			} catch (Exception e) {
 				Log.d(TAG, "exception while executing task: " + e.toString());
 				e.printStackTrace();
