@@ -16,6 +16,7 @@
 
 package com.arthurpitman.common.data;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.arthurpitman.common.CoreException;
@@ -30,9 +31,6 @@ public abstract class RemoteProvider <T extends IdObject> {
 
 	public static final int SCOPE_ALL = 1;
 	public static final int SCOPE_LOCAL = 2;
-
-	public static final int REQUEST_ALL = 1;
-	public static final int REQUEST_AVAILABLE = 2;
 
 	private LruCache<Long, T> cache;
 
@@ -50,16 +48,15 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * Gets a object by ID.
 	 * @param id
 	 * @param scope
-	 * @param request
 	 * @return
 	 * @throws CoreException
 	 */
-	public T get(long id, int scope, int request) throws CoreException {
+	public T get(long id, int scope) throws CoreException {
 		T o = cache.get(id);
 		if (o == null) {
 			o = getLocal(id);
 			if ((o == null) && (scope == SCOPE_ALL)) {
-				o = getRemote(id, request);
+				o = getRemote(id);
 				if (o != null) {
 					updateLocal(o);
 				}
@@ -76,18 +73,15 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * Gets a set of objects specified by an {@link IdSet}.
 	 * @param ids
 	 * @param scope
-	 * @param request
 	 * @return
 	 * @throws CoreException
 	 */
-	public ResultSet<T> get(IdSet ids, int scope, int request) throws CoreException {
-		ids.sort();
-		int size = ids.size();
-		ResultSet<T> result = new ResultSet<T>();
+	public ResultSet<T> get(IdSet ids, int scope) throws CoreException {
+		long[] sortedIds = ids.toArray();
+		Arrays.sort(sortedIds);
+		ResultSet<T> result = new ResultSet<T>(sortedIds.length);
 		IdSet missingIds = null;
-
-		for(int i = 0; i < size; i++) {
-			long id = ids.get(i);
+		for (long id : sortedIds) {
 			T o = cache.get(id);
 			if (o == null) {
 				o = getLocal(id);
@@ -106,13 +100,14 @@ public abstract class RemoteProvider <T extends IdObject> {
 		}
 
 		if ((missingIds != null) && !missingIds.isEmpty()) {
-			List<T> bulkObjects = getRemoteBulk(missingIds, request);
+			List<T> bulkObjects = getRemoteBulk(missingIds);
 			updateLocalBulk(bulkObjects);
 			for(T o : bulkObjects) {
 				cache.put(o.getId(), o);
 				result.put(o);
 			}
 		}
+		
 		return result;
 	}
 
@@ -120,17 +115,13 @@ public abstract class RemoteProvider <T extends IdObject> {
 	/**
 	 * Refreshes a single object.
 	 * @param id
-	 * @param scope
-	 * @param request
 	 * @throws CoreException
 	 */
-	public void refresh(long id, int scope, int request) throws CoreException {
-		if (scope == SCOPE_ALL) {
-			T o = getRemote(id, request);
-			updateLocal(o);
-			if (cache.get(id) != null) {
-				cache.put(o.getId(), o);
-			}
+	public void refresh(long id) throws CoreException {
+		T o = getRemote(id);
+		updateLocal(o);
+		if (cache.get(id) != null) {
+			cache.put(o.getId(), o);
 		}
 	}
 
@@ -138,19 +129,15 @@ public abstract class RemoteProvider <T extends IdObject> {
 	/**
 	 * Refreshes a set of objects.
 	 * @param ids
-	 * @param scope
-	 * @param request
 	 * @throws CoreException
 	 */
-	public void refresh(IdSet ids, int scope, int request) throws CoreException {
-		if (scope == SCOPE_ALL) {
-			List<T> bulkObjects = getRemoteBulk(ids, request);
-			updateLocalBulk(bulkObjects);
-			for(T o : bulkObjects) {
-				long id = o.getId();
-				if (cache.get(id) != null) {
-					cache.put(id, o);
-				}
+	public void refresh(IdSet ids) throws CoreException {
+		List<T> bulkObjects = getRemoteBulk(ids);
+		updateLocalBulk(bulkObjects);
+		for(T o : bulkObjects) {
+			long id = o.getId();
+			if (cache.get(id) != null) {
+				cache.put(id, o);
 			}
 		}
 	}
@@ -192,11 +179,10 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * <p/>
 	 * Override this in derived classes.
 	 * @param id
-	 * @param request
 	 * @return
 	 * @throws CoreException
 	 */
-	protected abstract T getRemote(long id, int request) throws CoreException;
+	protected abstract T getRemote(long id) throws CoreException;
 
 
 	/**
@@ -204,9 +190,8 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * <p/>
 	 * Override this in derived classes.
 	 * @param ids
-	 * @param request
 	 * @return
 	 * @throws CoreException
 	 */
-	protected abstract List<T> getRemoteBulk(IdSet ids, int request) throws CoreException;
+	protected abstract List<T> getRemoteBulk(IdSet ids) throws CoreException;
 }

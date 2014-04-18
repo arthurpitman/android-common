@@ -96,14 +96,6 @@ public class IdSet {
 
 
 	/**
-	 * Sorts the IdSet.
-	 */
-	public void sort() {
-		Arrays.sort(ids);
-	}
-
-
-	/**
 	 * Determines if the IdSet is empty.
 	 * @return
 	 */

@@ -16,6 +16,8 @@
 
 package com.arthurpitman.common.data;
 
+import java.util.Arrays;
+
 import android.support.v4.util.LruCache;
 
 import com.arthurpitman.common.CoreException;
@@ -60,11 +62,10 @@ public abstract class LocalProvider<T extends IdObject>{
 	 * @throws CoreException
 	 */
 	public ResultSet<T> get(IdSet ids) throws CoreException {
-		ids.sort();
-		int size = ids.size();
-		ResultSet<T> result = new ResultSet<T>(size);
-		for (int i = 0; i < size; i++) {
-			long id = ids.get(i);
+		long[] sortedIds = ids.toArray();
+		Arrays.sort(sortedIds);
+		ResultSet<T> result = new ResultSet<T>(sortedIds.length);
+		for (long id : sortedIds) {
 			T o = cache.get(id);
 			if (o == null) {
 				o = getLocal(id);
