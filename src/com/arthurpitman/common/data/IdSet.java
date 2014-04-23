@@ -38,7 +38,7 @@ public class IdSet {
 		this(DEFAULT_CAPACITY);
 	}
 
-	
+
 	/**
 	 * Creates a new IdSet based on an array of longs.
 	 * @param array
@@ -47,7 +47,7 @@ public class IdSet {
 		this(array.length);
 		System.arraycopy(array, 0, ids, 0, array.length);
 	}
-	
+
 
 	/**
 	 * Creates a new IdSet.
@@ -118,8 +118,8 @@ public class IdSet {
 		}
 		return size / 8;
 	}
-	
-	
+
+
 	/**
 	 * Converts this {@code IdSet} to a array of longs.
 	 * @return

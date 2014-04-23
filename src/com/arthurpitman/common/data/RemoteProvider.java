@@ -107,7 +107,7 @@ public abstract class RemoteProvider <T extends IdObject> {
 				result.put(o);
 			}
 		}
-		
+
 		return result;
 	}
 

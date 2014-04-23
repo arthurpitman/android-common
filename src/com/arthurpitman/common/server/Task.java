@@ -29,7 +29,7 @@ public abstract class Task {
 	public static final int STATUS_SUCCESS = 2;
 	public static final int STATUS_ERROR = 3;
 	public static final int STATUS_CANCELED = 4;
-	
+
 	/**
 	 * Callback interface for {@code Tasks}.
 	 */
@@ -39,7 +39,7 @@ public abstract class Task {
 
 	private Callback callback;
 	private volatile int status = STATUS_NONE;
-	
+
 
 	/**
 	 * Creates a new Task with the specified callback.
@@ -68,7 +68,7 @@ public abstract class Task {
 		return callback;
 	}
 
-	
+
 	/**
 	 * Gets the {@code Task} status.
 	 * @return
