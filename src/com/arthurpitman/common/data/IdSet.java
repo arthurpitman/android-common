@@ -16,8 +16,6 @@
 
 package com.arthurpitman.common.data;
 
-import java.util.Arrays;
-
 
 /**
  * Simple class for a set of long IDs.
