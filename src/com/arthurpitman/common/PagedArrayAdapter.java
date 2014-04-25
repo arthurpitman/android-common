@@ -167,15 +167,15 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 
 	/**
 	 * Adds new items, typically loaded on another thread.
-	 * @param newItems the items to add, <code>null</code> indicates no more items are available.
+	 * @param newItems the items to add.
+	 * @param moreAvailable
 	 */
-	public void addNewItems(List<T> newItems) {
-		if (newItems == null) {
-			moreAvailable = false;
-		} else {
+	public void addNewItems(List<T> newItems, boolean moreAvailable) {
+		if (newItems != null) {
 			items.addAll(newItems);
-			moreAvailable = true;
 		}
+
+		this.moreAvailable = moreAvailable;
 		loading = false;
 		notifyDataSetChanged();
 	}
