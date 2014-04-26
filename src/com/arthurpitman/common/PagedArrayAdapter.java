@@ -31,12 +31,12 @@ import android.widget.BaseAdapter;
  */
 public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 
-	
+
 	public interface OnFinishedLoadingListener {
 		void onFinishedLoading();
 	}
-	
-	
+
+
 	/**
 	 * Caches loading view.
 	 */
@@ -68,10 +68,10 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 	/** Loading view type constant */
 	public static final int LOADING_VIEW_TYPE = 1;
 
-	
+
 	/** Listener for finished loading event. */
 	private OnFinishedLoadingListener onFinishedLoadingListener;
-	
+
 
 	/*
 	 * ========================================
@@ -188,7 +188,7 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 		this.moreAvailable = moreAvailable;
 		loading = false;
 		notifyDataSetChanged();
-		
+
 		if (!moreAvailable && (onFinishedLoadingListener != null)) {
 			onFinishedLoadingListener.onFinishedLoading();
 		}
@@ -203,8 +203,8 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 		this.moreAvailable = moreAvailable;
 		notifyDataSetChanged();
 	}
-	
-	
+
+
 	/**
 	 * Refreshes the adapter by reloading the data.
 	 */
@@ -212,10 +212,17 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 		loading = false;
 		moreAvailable = true;
 		items.clear();
+		onRefresh();
 		notifyDataSetChanged();
 	}
-	
-	
+
+
+	/**
+	 * Override this to perform custom reinitialization upon refresh.
+	 */
+	protected void onRefresh() {};
+
+
 	/**
 	 * Gets the {@code OnFinishedLoadingListener}.
 	 * @return
@@ -223,8 +230,8 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 	public OnFinishedLoadingListener getOnFinishedLoadingListener() {
 		return onFinishedLoadingListener;
 	}
-	
-	
+
+
 	/**
 	 * Sets the {@code OnFinishedLoadingListener}.
 	 * @param onFinishedLoadingListener
