@@ -32,7 +32,7 @@ public abstract class RemoteProvider <T extends IdObject> {
 	public static final int SCOPE_ALL = 1;
 	public static final int SCOPE_LOCAL = 2;
 
-	private LruCache<Long, T> cache;
+	protected LruCache<Long, T> cache;
 
 
 	/**

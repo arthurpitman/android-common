@@ -129,6 +129,18 @@ public class Server {
 
 
 	/**
+	 * Cancels the specified task.
+	 * @param task
+	 */
+	public void cancel(final Task task) {
+		if (task != null) {
+			task.setStatus(Task.STATUS_CANCELED);
+		}
+		serverHandler.removeMessages(0, task);
+	}
+
+
+	/**
 	 * Gets the SharedContext used by the server.
 	 * @return
 	 */
