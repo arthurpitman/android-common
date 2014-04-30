@@ -48,7 +48,7 @@ public abstract class LocalProvider<T extends IdObject>{
 	 */
 	public T get(long id) throws CoreException {
 		T o = cache.get(id);
-		if (o == null) {
+		if ((o == null) || o.isStale()) {
 			o = getLocal(id);
 		}
 		return o;
@@ -67,7 +67,7 @@ public abstract class LocalProvider<T extends IdObject>{
 		ResultSet<T> result = new ResultSet<T>(sortedIds.length);
 		for (long id : sortedIds) {
 			T o = cache.get(id);
-			if (o == null) {
+			if ((o == null) || o.isStale()) {
 				o = getLocal(id);
 				if (o != null) {
 					cache.put(id, o);
@@ -104,6 +104,36 @@ public abstract class LocalProvider<T extends IdObject>{
 		for (int i = 0; i < size; i++) {
 			long id = ids.get(i);
 			refresh(id);
+		}
+	}
+
+
+	/**
+	 * Marks an object as stale.
+	 * @param id
+	 * @throws CoreException
+	 */
+	public void markStale(long id) throws CoreException {
+		T o = cache.get(id);
+		if (o != null) {
+			o.setStale(true);
+		}
+	}
+
+
+	/**
+	 * Marks a set of objects as stale.
+	 * @param ids
+	 * @throws CoreException
+	 */
+	public void markStale(IdSet ids) throws CoreException {
+		int size = ids.size();
+		for (int i = 0; i < size; i++) {
+			long id = ids.get(i);
+			T o = cache.get(id);
+			if (o != null) {
+				o.setStale(true);
+			}
 		}
 	}
 

@@ -21,13 +21,48 @@ package com.arthurpitman.common.data;
  * Base class for objects identified by a long id.
  */
 public class IdObject {
+
+	/** Unique identifier for objects of this type. */
 	protected final long id;
 
+	/** Stale flag. Do not manipulate this directly, it will be managed by the provider. */
+	protected boolean stale;
+
+
+	/**
+	 * Creates a new IdObject.
+	 * @param id
+	 */
 	public IdObject(long id) {
 		this.id = id;
 	}
 
+
+	/**
+	 * Gets the id.
+	 * @return
+	 */
 	public long getId() {
 		return id;
+	}
+
+
+	/**
+	 * Sets the stale flag.
+	 * <p/>
+	 * Do not call this directly, it will be managed by the provider.
+	 * @param stale
+	 */
+	public void setStale(boolean stale) {
+		this.stale = stale;
+	}
+
+
+	/**
+	 * Gets the stale flag.
+	 * @return
+	 */
+	public boolean isStale() {
+		return stale;
 	}
 }

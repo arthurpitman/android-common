@@ -65,6 +65,16 @@ public abstract class RemoteProvider <T extends IdObject> {
 				cache.put(id, o);
 			}
 		}
+
+		if ((o != null) && o.isStale() && (scope == SCOPE_ALL)) {
+			T or = getRemote(id);
+			if (or != null) {
+				updateLocal(or);
+				cache.put(id, or);
+				o = or;
+			}
+		}
+
 		return o;
 	}
 
@@ -99,8 +109,35 @@ public abstract class RemoteProvider <T extends IdObject> {
 			}
 		}
 
-		if ((missingIds != null) && !missingIds.isEmpty()) {
-			List<T> bulkObjects = getRemoteBulk(missingIds);
+		pullRemote(missingIds, result);
+
+		IdSet staleIds = null;
+		int size = result.size();
+		for (int i = 0; i < size; i++) {
+			T o = result.valueAt(i);
+			if (o.isStale()) {
+				if (staleIds == null) {
+					staleIds = new IdSet();
+				}
+				staleIds.add(o.getId());
+			}
+		}
+
+		pullRemote(staleIds, result);
+
+		return result;
+	}
+
+
+	/**
+	 * Gets objects from remote storage, updates caches and adds them to the result.
+	 * @param ids
+	 * @param result
+	 * @throws CoreException
+	 */
+	private void pullRemote(IdSet ids, ResultSet<T> result) throws CoreException {
+		if ((ids != null) && !ids.isEmpty()) {
+			List<T> bulkObjects = getRemoteBulk(ids);
 			updateLocalBulk(bulkObjects);
 			for(T o : bulkObjects) {
 				cache.put(o.getId(), o);
@@ -108,7 +145,6 @@ public abstract class RemoteProvider <T extends IdObject> {
 			}
 		}
 
-		return result;
 	}
 
 
@@ -119,9 +155,11 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 */
 	public void refresh(long id) throws CoreException {
 		T o = getRemote(id);
-		updateLocal(o);
-		if (cache.get(id) != null) {
-			cache.put(o.getId(), o);
+		if (o != null) {
+			updateLocal(o);
+			if (cache.get(id) != null) {
+				cache.put(o.getId(), o);
+			}
 		}
 	}
 
@@ -138,6 +176,38 @@ public abstract class RemoteProvider <T extends IdObject> {
 			long id = o.getId();
 			if (cache.get(id) != null) {
 				cache.put(id, o);
+			}
+		}
+	}
+
+
+	/**
+	 * Marks an object as stale.
+	 * @param id
+	 * @throws CoreException
+	 */
+	public void markStale(long id) throws CoreException {
+		markStaleLocal(id);
+		T o = cache.get(id);
+		if (o != null) {
+			o.setStale(true);
+		}
+	}
+
+
+	/**
+	 * Marks a set of objects as stale.
+	 * @param ids
+	 * @throws CoreException
+	 */
+	public void markStale(IdSet ids) throws CoreException {
+		markStaleLocalBulk(ids);
+		int size = ids.size();
+		for (int i = 0; i < size; i++) {
+			long id = ids.get(i);
+			T o = cache.get(id);
+			if (o != null) {
+				o.setStale(true);
 			}
 		}
 	}
@@ -162,6 +232,26 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * @throws CoreException
 	 */
 	protected abstract void updateLocal(T o) throws CoreException;
+
+
+	/**
+	 * Marks an object as stale in local storage, if it exists.
+	 * <p/>
+	 * Override this in derived classes.
+	 * @param id
+	 * @throws CoreException
+	 */
+	protected abstract void markStaleLocal(long id) throws CoreException;
+
+
+	/**
+	 * Marks an object as stale in local storage, if it exists.
+	 * <p/>
+	 * Override this in derived classes.
+	 * @param ids
+	 * @throws CoreException
+	 */
+	protected abstract void markStaleLocalBulk(IdSet ids) throws CoreException;
 
 
 	/**
