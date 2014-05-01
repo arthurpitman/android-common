@@ -130,7 +130,7 @@ public abstract class RemoteProvider <T extends IdObject> {
 
 
 	/**
-	 * Gets objects from remote storage, updates caches and adds them to the result.
+	 * Gets objects from remote storage, updates caches and adds them to the specified result.
 	 * @param ids
 	 * @param result
 	 * @throws CoreException
@@ -151,14 +151,23 @@ public abstract class RemoteProvider <T extends IdObject> {
 	/**
 	 * Refreshes a single object.
 	 * @param id
+	 * @param defer
 	 * @throws CoreException
 	 */
-	public void refresh(long id) throws CoreException {
-		T o = getRemote(id);
-		if (o != null) {
-			updateLocal(o);
-			if (cache.get(id) != null) {
-				cache.put(o.getId(), o);
+	public void refresh(long id, boolean defer) throws CoreException {
+		if (defer) {
+			markStaleLocal(id);
+			T o = cache.get(id);
+			if (o != null) {
+				o.setStale(true);
+			}
+		} else {
+			T o = getRemote(id);
+			if (o != null) {
+				updateLocal(o);
+				if (cache.get(id) != null) {
+					cache.put(o.getId(), o);
+				}
 			}
 		}
 	}
@@ -167,47 +176,28 @@ public abstract class RemoteProvider <T extends IdObject> {
 	/**
 	 * Refreshes a set of objects.
 	 * @param ids
+	 * @param defer
 	 * @throws CoreException
 	 */
-	public void refresh(IdSet ids) throws CoreException {
-		List<T> bulkObjects = getRemoteBulk(ids);
-		updateLocalBulk(bulkObjects);
-		for(T o : bulkObjects) {
-			long id = o.getId();
-			if (cache.get(id) != null) {
-				cache.put(id, o);
+	public void refresh(IdSet ids, boolean defer) throws CoreException {
+		if (defer) {
+			markStaleLocalBulk(ids);
+			int size = ids.size();
+			for (int i = 0; i < size; i++) {
+				long id = ids.get(i);
+				T o = cache.get(id);
+				if (o != null) {
+					o.setStale(true);
+				}
 			}
-		}
-	}
-
-
-	/**
-	 * Marks an object as stale.
-	 * @param id
-	 * @throws CoreException
-	 */
-	public void markStale(long id) throws CoreException {
-		markStaleLocal(id);
-		T o = cache.get(id);
-		if (o != null) {
-			o.setStale(true);
-		}
-	}
-
-
-	/**
-	 * Marks a set of objects as stale.
-	 * @param ids
-	 * @throws CoreException
-	 */
-	public void markStale(IdSet ids) throws CoreException {
-		markStaleLocalBulk(ids);
-		int size = ids.size();
-		for (int i = 0; i < size; i++) {
-			long id = ids.get(i);
-			T o = cache.get(id);
-			if (o != null) {
-				o.setStale(true);
+		} else {
+			List<T> bulkObjects = getRemoteBulk(ids);
+			updateLocalBulk(bulkObjects);
+			for(T o : bulkObjects) {
+				long id = o.getId();
+				if (cache.get(id) != null) {
+					cache.put(id, o);
+				}
 			}
 		}
 	}
