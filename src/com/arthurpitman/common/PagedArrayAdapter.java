@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012, 2013 Arthur Pitman
+ * Copyright (C) 2012 - 2014 Arthur Pitman
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,27 +37,23 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 	}
 
 
-	/**
-	 * Caches loading view.
-	 */
+	/** Caches loading view. */
 	private View loadingView;
 
 
-	/**
-	 * Indicates if loading is in progress.
-	 */
+	/** Caches empty view. */
+	private View emptyView;
+
+
+	/** Indicates if loading is in progress. */
 	private boolean loading = false;
 
 
-	/**
-	 * Indicates if more items are available, i.e. loading view should be displayed.
-	 */
+	/** Indicates if more items are available, i.e. loading view should be displayed. */
 	private boolean moreAvailable = true;
 
 
-	/**
-	 * Backing store for items.
-	 */
+	/** Backing store for items. */
 	protected ArrayList<T> items  = new ArrayList<T>();
 
 
@@ -67,6 +63,11 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 
 	/** Loading view type constant */
 	public static final int LOADING_VIEW_TYPE = 1;
+
+
+	/** Empty view type constant */
+	public static final int EMPTY_VIEW_TYPE = 2;
+
 
 
 	/** Listener for finished loading event. */
@@ -83,7 +84,11 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 	@Override
 	public int getItemViewType(int position) {
 		if (position == items.size()) {
-			return LOADING_VIEW_TYPE;
+			if (moreAvailable) {
+				return LOADING_VIEW_TYPE;
+			} else {
+				return EMPTY_VIEW_TYPE;
+			}
 		} else {
 			return 0;
 		}
@@ -95,7 +100,7 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 		if (moreAvailable) {
 			return items.size() + 1;
 		} else {
-			return items.size();
+			return Math.max(items.size(), 1);
 		}
 	}
 
@@ -114,21 +119,29 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		 if (getItemViewType(position) == LOADING_VIEW_TYPE) {
-			 // if loading view is now visible and not loading, start loading
-			 if (!loading) {
-				 loading = true;
-				 loadItems();
-			 }
+		int itemViewType = getItemViewType(position);
+		if (itemViewType == LOADING_VIEW_TYPE) {
+			// if loading view is now visible and not loading, start loading
+			if (!loading) {
+				loading = true;
+				loadItems();
+			}
 
-			 // cache loading view
-			 if (loadingView == null) {
-				 loadingView = getLoadingView();
-			 }
-			 return loadingView;
-		 } else {
-			 // note: cannot convert a loading view to an item view
-			 if (convertView == loadingView) {
+			// cache loading view
+			if (loadingView == null) {
+				loadingView = getLoadingView();
+			}
+			return loadingView;
+		} else if (itemViewType == EMPTY_VIEW_TYPE) {
+			// cache loading view
+			if (emptyView == null) {
+				emptyView = getEmptyView();
+			}
+			return emptyView;
+		} else {
+
+			 // note: cannot convert a loading or empty view to an item view
+			 if ((convertView == loadingView) || (convertView == emptyView)){
 				 return getItemView(position, null);
 			 } else {
 				 return getItemView(position, convertView);
@@ -151,7 +164,7 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 
 
 	/**
-	 * Get a view for an item at the specified position.
+	 * Gets a view for an item at the specified position.
 	 * @param position position of the item.
 	 * @param convertView view to recycle if possible.
 	 * @return the view.
@@ -160,12 +173,21 @@ public abstract class PagedArrayAdapter<T> extends BaseAdapter {
 
 
 	/**
-	 * Get a loading view.
+	 * Gets a loading view.
 	 * <p>
 	 * This view is never recycled as it is cached.
 	 * @return
 	 */
 	protected abstract View getLoadingView();
+
+
+	/**
+	 * Gets a view to display when the adapter is empty.
+	 * <p>
+	 * This view is never recycled as it is cached.
+	 * @return
+	 */
+	protected abstract View getEmptyView();
 
 
 	/*
