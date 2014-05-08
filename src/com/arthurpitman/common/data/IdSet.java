@@ -44,6 +44,7 @@ public class IdSet {
 	public IdSet(long[] array) {
 		this(array.length);
 		System.arraycopy(array, 0, ids, 0, array.length);
+		size = array.length;
 	}
 
 

@@ -155,19 +155,23 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * @throws CoreException
 	 */
 	public void refresh(long id, boolean defer) throws CoreException {
-		if (defer) {
-			markStaleLocal(id);
-			T o = cache.get(id);
-			if (o != null) {
-				o.setStale(true);
-			}
-		} else {
+		if (!defer) {
 			T o = getRemote(id);
 			if (o != null) {
 				updateLocal(o);
 				if (cache.get(id) != null) {
 					cache.put(o.getId(), o);
 				}
+			} else {
+				defer = true;
+			}
+		}
+
+		if (defer) {
+			markStaleLocal(id);
+			T o = cache.get(id);
+			if (o != null) {
+				o.setStale(true);
 			}
 		}
 	}
@@ -180,6 +184,37 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * @throws CoreException
 	 */
 	public void refresh(IdSet ids, boolean defer) throws CoreException {
+		if (!defer) {
+			List<T> bulkObjects = getRemoteBulk(ids);
+			updateLocalBulk(bulkObjects);
+			IdSet missingIds = null;
+			int srcIndex = 0;
+			for(T o : bulkObjects) {
+				long id = o.getId();
+				if (cache.get(id) != null) {
+					cache.put(id, o);
+				}
+
+				while (true) {
+					long sId = ids.get(srcIndex);
+					if (id == sId) {
+						break;
+					}
+					if (missingIds == null) {
+						missingIds = new IdSet();
+					}
+					missingIds.add(sId);
+					srcIndex++;
+				}
+			}
+
+			// objects that failed to be retrieved will be deferred
+			if (missingIds != null) {
+				defer = true;
+				ids = missingIds;
+			}
+		}
+
 		if (defer) {
 			markStaleLocalBulk(ids);
 			int size = ids.size();
@@ -188,15 +223,6 @@ public abstract class RemoteProvider <T extends IdObject> {
 				T o = cache.get(id);
 				if (o != null) {
 					o.setStale(true);
-				}
-			}
-		} else {
-			List<T> bulkObjects = getRemoteBulk(ids);
-			updateLocalBulk(bulkObjects);
-			for(T o : bulkObjects) {
-				long id = o.getId();
-				if (cache.get(id) != null) {
-					cache.put(id, o);
 				}
 			}
 		}
@@ -228,6 +254,8 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * Marks an object as stale in local storage, if it exists.
 	 * <p/>
 	 * Override this in derived classes.
+	 * <p/>
+	 * If the object doesn't exist, ignore the request.
 	 * @param id
 	 * @throws CoreException
 	 */
@@ -235,9 +263,11 @@ public abstract class RemoteProvider <T extends IdObject> {
 
 
 	/**
-	 * Marks an object as stale in local storage, if it exists.
+	 * Marks a set of objects as stale in local storage, if it exists.
 	 * <p/>
 	 * Override this in derived classes.
+	 * <p/>
+	 * Ignore requests for objects for objects that don't exist.
 	 * @param ids
 	 * @throws CoreException
 	 */
@@ -269,6 +299,8 @@ public abstract class RemoteProvider <T extends IdObject> {
 	 * Gets a set of objects from remote storage.
 	 * <p/>
 	 * Override this in derived classes.
+	 * <p/>
+	 * Implementations are expected to return objects in the requested order.
 	 * @param ids
 	 * @return
 	 * @throws CoreException
